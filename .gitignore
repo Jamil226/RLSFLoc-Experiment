@@ -155,8 +155,6 @@ Thumbs.db
 *~
 
 # Project specific
-checkpoints/
 data/raw/
 data/processed/
-results/
 mock_temp.csv

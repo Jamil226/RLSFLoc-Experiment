@@ -1,0 +1,9 @@
+Method,MRR (Mean ± Std),EXAM (Mean ± Std),Wilcoxon p-value,Cliff's Delta d,Effect Size
+Ochiai,0.3664 ± 0.3125,0.1160 ± 0.1074,0.0009,+0.7525,Large
+Tarantula,0.2264 ± 0.1836,0.2250 ± 0.2057,0.0003,+0.9350,Large
+DStar,0.4642 ± 0.2741,0.0812 ± 0.1009,0.0015,+0.6925,Large
+Graph-Only,0.4596 ± 0.4556,0.2922 ± 0.2944,0.0022,+0.5050,Large
+Transformer-Only,0.3830 ± 0.3916,0.2364 ± 0.2329,0.0006,+0.6575,Large
+DeepFL-like MLP,0.0190 ± 0.0057,0.9632 ± 0.0402,0.0001,+1.0000,Large
+RankNet LTR,0.7892 ± 0.2965,0.0313 ± 0.0293,0.1471,+0.1675,Small
+RLSFLoc (PPO),0.8917 ± 0.2191,0.0230 ± 0.0119,-,-,-
