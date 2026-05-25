@@ -156,9 +156,10 @@ If you use RLSFLoc in your software engineering research, please cite our corres
 
 ```bibtex
 @article{jamil2026rlsfloc,
-  author    = {Muhammad Jamil and Adnan Kavak and Sema Bayraktar and Muhammad Farhan and Gautam Srivastava and Hossein Fotouhi},
+  author    = {Muhammad Jamil and Sema Bayraktar and Alpaslan Burak İnner and Adnan Kavak and Muhammad Farhan and Gautam Srivastava and Hossein Fotouhi},
   title     = {RLSFLoc: Reinforcement Learning-Based Adaptive Fusion for Fault Localization in Scalable Software Systems},
   journal   = {Special Issue on AI/ML in Software Engineering},
   year      = {2026}
 }
 ```
+
