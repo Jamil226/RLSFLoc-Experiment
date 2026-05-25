@@ -80,7 +80,16 @@ def generate_topk_comparison():
     # Annotate RLSFLoc perfect values
     ax.text(7, 1.03, "1.00", ha='center', va='bottom', fontsize=8, fontweight='bold', color='#27AE60')
     
+    # Annotate zero values clearly so they do not look like missing data
+    ax.text(x[0] - 1.5 * width, 0.015, "0.00", ha='center', va='bottom', fontsize=7.5, fontweight='bold', color='#7F8C8D')
+    
+    ax.text(x[5] - 1.5 * width, 0.015, "0.00", ha='center', va='bottom', fontsize=7.5, fontweight='bold', color='#7F8C8D')
+    ax.text(x[5] - 0.5 * width, 0.015, "0.00", ha='center', va='bottom', fontsize=7.5, fontweight='bold', color='#7F8C8D')
+    ax.text(x[5] + 0.5 * width, 0.015, "0.00", ha='center', va='bottom', fontsize=7.5, fontweight='bold', color='#7F8C8D')
+    ax.text(x[5] + 1.5 * width, 0.015, "0.00", ha='center', va='bottom', fontsize=7.5, fontweight='bold', color='#7F8C8D')
+    
     save_plot("topk_comparison.png")
+
 
 # =====================================================================
 # Fig 2: MRR Comparison
@@ -296,29 +305,31 @@ def generate_dependency_graph():
     G.add_edge("s2", "s3", edge_type='cfg')
     G.add_edge("s2", "s4", edge_type='dataflow')
     
+    # Spreading out positions horizontally and vertically to avoid overlap
     pos = {
-        "App.java": (-2.0, 3.0),
-        "Service.java": (2.0, 3.0),
-        "main()": (-2.0, 1.5),
-        "process()": (0.5, 1.5),
-        "validate()": (2.5, 1.5),
-        "s0": (-3.0, 0.0),
-        "s1": (-1.0, 0.0),
-        "s2": (0.0, 0.0),
-        "s3": (1.0, 0.0),
-        "s4": (2.5, 0.0)
+        "App.java": (-3.5, 3.0),
+        "Service.java": (2.5, 3.0),
+        "main()": (-3.5, 1.6),
+        "process()": (0.8, 1.6),
+        "validate()": (3.5, 1.6),
+        "s0": (-4.7, 0.0),
+        "s1": (-2.3, 0.0),
+        "s2": (-0.2, 0.0),
+        "s3": (1.8, 0.0),
+        "s4": (3.5, 0.0)
     }
     
-    fig, ax = plt.subplots(figsize=(9, 6))
+    # Increase height slightly to accommodate the padded legend at the bottom
+    fig, ax = plt.subplots(figsize=(10, 6.8))
     
     files = [n for n, attr in G.nodes(data=True) if attr['type'] == 'file']
     methods = [n for n, attr in G.nodes(data=True) if attr['type'] == 'method']
     statements = [n for n, attr in G.nodes(data=True) if attr['type'] == 'statement']
     
-    # Draw nodes
-    nx.draw_networkx_nodes(G, pos, nodelist=files, node_color='#F1948A', node_shape='H', node_size=800, edgecolors='#C0392B', label='Class Nodes')
-    nx.draw_networkx_nodes(G, pos, nodelist=methods, node_color='#AED581', node_shape='s', node_size=600, edgecolors='#558B2F', label='Method Nodes')
-    nx.draw_networkx_nodes(G, pos, nodelist=statements, node_color='#85C1E9', node_shape='o', node_size=450, edgecolors='#2E86C1', label='Statement Nodes')
+    # Draw nodes with large sizes to fit labels completely inside the shapes
+    nx.draw_networkx_nodes(G, pos, nodelist=files, node_color='#F1948A', node_shape='H', node_size=3800, edgecolors='#C0392B', linewidths=1.5, ax=ax)
+    nx.draw_networkx_nodes(G, pos, nodelist=methods, node_color='#AED581', node_shape='s', node_size=2800, edgecolors='#558B2F', linewidths=1.5, ax=ax)
+    nx.draw_networkx_nodes(G, pos, nodelist=statements, node_color='#85C1E9', node_shape='o', node_size=1800, edgecolors='#2E86C1', linewidths=1.5, ax=ax)
     
     import_edges = [(u, v) for u, v, attr in G.edges(data=True) if attr['edge_type'] == 'import']
     contain_edges = [(u, v) for u, v, attr in G.edges(data=True) if attr['edge_type'] == 'contain']
@@ -326,17 +337,22 @@ def generate_dependency_graph():
     cfg_edges = [(u, v) for u, v, attr in G.edges(data=True) if attr['edge_type'] == 'cfg']
     dataflow_edges = [(u, v) for u, v, attr in G.edges(data=True) if attr['edge_type'] == 'dataflow']
     
-    nx.draw_networkx_edges(G, pos, edgelist=import_edges, width=1.5, edge_color='#7F8C8D', style='dotted', arrowsize=10)
-    nx.draw_networkx_edges(G, pos, edgelist=contain_edges, width=1.0, edge_color='#BDC3C7', style='solid', arrowsize=8)
-    nx.draw_networkx_edges(G, pos, edgelist=call_edges, width=1.8, edge_color='#3498DB', style='dashed', arrowsize=12)
-    nx.draw_networkx_edges(G, pos, edgelist=cfg_edges, width=1.5, edge_color='#2C3E50', style='solid', arrowsize=10)
-    nx.draw_networkx_edges(G, pos, edgelist=dataflow_edges, width=1.8, edge_color='#27AE60', style='solid', arrowsize=12)
+    nx.draw_networkx_edges(G, pos, edgelist=import_edges, width=1.5, edge_color='#7F8C8D', style='dotted', arrowsize=12, ax=ax)
+    nx.draw_networkx_edges(G, pos, edgelist=contain_edges, width=1.2, edge_color='#BDC3C7', style='solid', arrowsize=10, ax=ax)
+    nx.draw_networkx_edges(G, pos, edgelist=call_edges, width=2.0, edge_color='#3498DB', style='dashed', arrowsize=14, ax=ax)
+    nx.draw_networkx_edges(G, pos, edgelist=cfg_edges, width=1.5, edge_color='#2C3E50', style='solid', arrowsize=12, ax=ax)
+    nx.draw_networkx_edges(G, pos, edgelist=dataflow_edges, width=2.0, edge_color='#27AE60', style='solid', arrowsize=14, ax=ax)
     
-    nx.draw_networkx_labels(G, pos, font_size=8, font_family='sans-serif', font_weight='bold')
+    # Label drawing with high-contrast text inside the node shapes
+    nx.draw_networkx_labels(G, pos, font_size=8.5, font_family='sans-serif', font_weight='bold', font_color='#2C3E50', ax=ax)
     
-    ax.set_title("Illustrative Multi-Granular Structural Dependency Graph", fontsize=12, fontweight='bold', pad=12, color='#2C3E50')
+    ax.set_title("Illustrative Multi-Granular Structural Dependency Graph", fontsize=12.5, fontweight='bold', pad=12, color='#2C3E50')
     
-    # Legend setup
+    # Premium combined legend with padding (Nodes + Edges)
+    plt.scatter([], [], color='#F1948A', marker='H', s=120, edgecolors='#C0392B', label='Class Node')
+    plt.scatter([], [], color='#AED581', marker='s', s=100, edgecolors='#558B2F', label='Method Node')
+    plt.scatter([], [], color='#85C1E9', marker='o', s=80, edgecolors='#2E86C1', label='Statement Node')
+    
     plt.plot([], [], color='#7F8C8D', linestyle=':', label='Import Link')
     plt.plot([], [], color='#BDC3C7', linestyle='-', label='Containment')
     plt.plot([], [], color='#3498DB', linestyle='--', label='Method Call')
@@ -344,9 +360,14 @@ def generate_dependency_graph():
     plt.plot([], [], color='#27AE60', linestyle='-', label='Data Flow (Def-Use)')
     
     plt.axis('off')
-    plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.06), ncol=4, frameon=True, facecolor='white', edgecolor='#E2E8F0', fontsize=8)
+    
+    # Legend with padding
+    plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.15), ncol=4, frameon=True, 
+               facecolor='white', edgecolor='#CCCCCC', fontsize=8.5,
+               borderpad=1.2, labelspacing=0.8, handletextpad=1.0, columnspacing=1.8)
     
     save_plot("dependency_graph.png")
+
 
 # =====================================================================
 # Fig 8: Ablation Heatmap
