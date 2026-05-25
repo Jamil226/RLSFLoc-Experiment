@@ -51,16 +51,16 @@
 %\newcommand{\orcidauthorB}{0000-0000-0000-000X} % Add \orcidB{} behind the author's name
 
 % Authors, for the paper (add full first names)
-\Author{Muhammad Jamil $^{1,2}$, Adnan Kavak $^{1,2}$, Sema Bayraktar $^{2}$, Muhammad Farhan $^{3}$, Gautam Srivastava $^{4,5}$ and Hossein Fotouhi $^{6}$*}
+\Author{Muhammad Jamil $^{1,2}$, Sema Bayraktar $^{2}$, Alpaslan Burak \.{I}nner $^{1,2}$, Adnan Kavak $^{1,2}$, Muhammad Farhan $^{3}$, Gautam Srivastava $^{4,5}$ and Hossein Fotouhi $^{6}$*}
 
 %\longauthorlist{yes}
 
 % MDPI internal command: Authors, for metadata in PDF
-\AuthorNames{Muhammad Jamil, Adnan Kavak, Sema Bayraktar, Muhammad Farhan, Gautam Srivastava and Hossein Fotouhi}
+\AuthorNames{Muhammad Jamil, Sema Bayraktar, Alpaslan Burak \.{I}nner, Adnan Kavak, Muhammad Farhan, Gautam Srivastava and Hossein Fotouhi}
 
 % Affiliations / Addresses (Add [1] after \address if there is only one affiliation.)
 \address{%
-$^{1}$ \quad Department of Computer Engineering, Kocaeli University, Kocaeli 41001, Türkiye; jamil138.amin@gmail.com (M.J.); akavak@kocaeli.edu.tr (A.K.)\\
+$^{1}$ \quad Department of Computer Engineering, Kocaeli University, Kocaeli 41001, Türkiye; jamil138.amin@gmail.com (M.J.); burak.inner@gmail.com(A.B.I.) akavak@kocaeli.edu.tr (A.K.)\\
 
 $^{2}$ \quad Wireless Information and Intelligent Systems (WINS) Research Center, Kocaeli University, Kocaeli 41001, Türkiye; bayraktar.sema41@gmail.com (S.B.)\\
 
@@ -79,7 +79,7 @@ $^{6}$ \quad Department of Computer Science and Computer Engineering, Mälardale
 
 
 \abstract{
-Software fault localization plays an important role in reducing debugging effort and improving software maintenance. Traditional Spectrum-Based Fault Localization (SBFL) methods, such as Tarantula, Ochiai, and DStar, mainly depend on passed and failed test coverage and often fail to capture semantic meaning and structural dependency relationships among program elements. To address these limitations, this paper proposes \textbf{RLSFLoc}, a reinforcement learning-enhanced semantic and structural fault localization framework for scalable software fault localization. RLSFLoc integrates execution trace analysis, structural dependency graph propagation, semantic code representation, and reinforcement learning-based adaptive fusion to generate a ranked list of suspicious program elements. The proposed method formulates fault localization as a ranking-oriented decision-making problem, where the reinforcement learning agent learns adaptive fusion weights for execution, structural, and semantic evidence. The framework was evaluated using AEEEM~\cite{dambros2010aeeem} and Defects4J~\cite{just2014defects4j} under within-project and cross-project settings. The experimental results show that RLSFLoc achieves Top-1, Top-3, Top-5, and Top-10 accuracy values of 0.80, 1.00, 1.00, and 1.00, respectively, with an MRR of 0.8917, a MAP of 0.8917, and a mean EXAM score of 0.0230 (representing only 2.30\% of the codebase inspected). Compared with traditional SBFL, deep learning, learning-to-rank, graph-based, and Transformer-based baselines, RLSFLoc significantly improves early fault ranking while maintaining acceptable runtime and memory overhead. These results indicate that adaptive fusion of execution, semantic, and structural evidence can improve fault localization effectiveness and support practical debugging workflows in modern software engineering.
+Software fault localization plays an important role in reducing debugging effort and improving software maintenance. Traditional Spectrum-Based Fault Localization (SBFL) methods, such as Tarantula, Ochiai, and DStar, mainly depend on passed and failed test coverage and often fail to capture semantic meaning and structural dependency relationships among program elements. To address these limitations, this paper proposes \textbf{RLSFLoc}, a reinforcement learning-enhanced semantic and structural fault localization framework for scalable software fault localization. RLSFLoc integrates execution trace analysis, structural dependency graph propagation, semantic code representation, and reinforcement learning-based adaptive fusion to generate a ranked list of suspicious program elements. The proposed method formulates fault localization as a ranking-oriented decision-making problem, where the reinforcement learning agent learns adaptive fusion weights for execution, structural, and semantic evidence. The framework was evaluated using AEEEM \cite{dambros2010aeeem} and Defects4J \cite{just2014defects4j} under within-project and cross-project settings. The experimental results show that RLSFLoc achieves Top-1, Top-3, Top-5, and Top-10 accuracy values of 0.80, 1.00, 1.00, and 1.00, respectively, with an MRR of 0.8917, a MAP of 0.8917, and a mean EXAM score of 0.0230 (representing only 2.30\% of the codebase inspected). Compared with implemented spectrum-, learning-, graph-, and semantic-representation-based baselines, RLSFLoc improves early fault ranking while maintaining acceptable runtime and memory overhead. These results indicate that adaptive fusion of execution, semantic, and structural evidence can improve fault localization effectiveness and support practical debugging workflows in modern software engineering.
 }
 
 \keyword{
@@ -91,30 +91,25 @@ Spectrum-Based Fault Localization;
 Debugging Automation
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{document}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 \label{sec:introduction}
 
-Software systems are becoming increasingly large, interconnected, and difficult to maintain. Modern software projects often contain thousands of files, methods, classes, and execution paths. When a failure occurs, developers must identify the exact faulty program element responsible for the observed error. This process is commonly performed through manual debugging, code inspection, test analysis, and repeated execution. As software size and complexity increase, manual debugging becomes expensive, time-consuming, and error-prone. Therefore, automated fault localization has become an important research direction in software engineering because it helps developers identify suspicious code locations more efficiently.
+Software systems are becoming increasingly large, interconnected, and difficult to maintain. Modern software projects often contain thousands of files, methods, classes, and execution paths. When a failure occurs, developers must identify the exact faulty program element responsible for the observed error. This process is commonly performed through manual debugging, code inspection, test analysis, and repeated execution. As software size and complexity increase, manual debugging becomes expensive, time-consuming, and error-prone. Therefore, automated fault localization has become an important research direction in software engineering because it helps developers identify suspicious code locations more efficiently \cite{wong2016survey,sarhan2022survey,wong2023overview,kochhar2016practitioners}. Fault localization aims to rank program elements according to their likelihood of being faulty. Traditional Spectrum-Based Fault Localization (SBFL) methods, such as Tarantula \cite{jones2005tarantula}, Ochiai \cite{abreu2007ochiai}, and DStar \cite{wong2014dstar}, use passed and failed test coverage to compute suspiciousness scores. These methods are simple, fast, and widely used. However, they mainly depend on execution spectra and cannot fully capture the semantic meaning of source code or the structural dependencies among program elements. As a result, they may produce weak rankings when several statements or methods have similar coverage patterns \cite{pearson2017evaluation,zhang2021pagerank,beszedes2022frequency}. Information Retrieval (IR)-based fault localization methods address this issue by using textual similarity between bug reports and source-code elements \cite{zhou2012buglocator,saha2013bluir,le2015better}. These methods can capture semantic relationships between failure descriptions and code identifiers, comments, or method names. However, their performance depends heavily on the quality of bug reports and naming conventions \cite{mills2020queries,kim2021trustworthy,chaparro2019query}. Similarly, neural representation approaches can learn richer code representations, but they often require training data and computational resources and require attention to interpretability \cite{li2019deepfl,lou2021grace,widyasari2022xai4fl}.
 
-Fault localization aims to rank program elements according to their likelihood of being faulty. Traditional Spectrum-Based Fault Localization (SBFL) methods, such as Tarantula~\cite{jones2005tarantula}, Ochiai~\cite{abreu2007ochiai}, and DStar~\cite{wong2013dstar}, use passed and failed test coverage to compute suspiciousness scores. These methods are simple, fast, and widely used. However, they mainly depend on execution spectra and cannot fully capture the semantic meaning of source code or the structural dependencies among program elements. As a result, they may produce weak rankings when several statements or methods have similar coverage patterns.
+A major limitation in existing fault localization research is the gap between execution evidence, semantic evidence, and structural evidence. Execution evidence shows which program elements are involved in failed tests. Semantic evidence captures the meaning of code and bug descriptions. Structural evidence describes call relations, control-flow dependencies, data-flow links, and module-level interactions. Many existing methods use one principal evidence type or combine multiple evidence sources using learned or fixed strategies \cite{xuan2014learning,sohn2017fluccs,le2016ltr,lou2021grace,zeng2022smartfl,yan2023propagation}. However, the importance of each evidence source may change across different bugs, projects, and program contexts. Therefore, an adaptive fusion strategy is worth investigating for robust fault localization. To address this limitation, this paper proposes RLSFLoc, a reinforcement learning-enhanced semantic and structural fault localization framework for scalable software fault localization. RLSFLoc integrates execution trace analysis, structural dependency graph construction, semantic code representation, RL-based adaptive fusion, and a final fault ranking engine. The proposed framework first computes execution-based suspiciousness from passed and failed test cases. It then constructs a structural dependency graph to model relationships among program elements. In parallel, semantic representations are extracted from source code and bug-related textual information. These evidence sources are normalized and adaptively fused using a reinforcement learning agent that learns how much importance should be assigned to execution, structural, and semantic scores.
 
-Information Retrieval (IR)-based fault localization methods address this issue by using textual similarity between bug reports and source-code elements. These methods can capture semantic relationships between failure descriptions and code identifiers, comments, or method names. However, their performance depends heavily on the quality of bug reports and naming conventions. Similarly, deep learning and Transformer-based approaches can learn richer code representations, but they often require large training data, high computational resources, and may provide limited interpretability.
+The motivation for using reinforcement learning is that fault localization can be formulated as a ranking-oriented decision-making problem. The goal is not only to classify whether a program element is faulty, but to rank faulty elements as high as possible so that developers can inspect fewer candidates \cite{parnin2011debugging,kochhar2016practitioners}. Recent RL-based bug localization provides direct evidence that optimizing ranking-oriented rewards is feasible \cite{chakraborty2024rlocator}. The reinforcement learning agent receives reward feedback based on ranking quality, Top-$k$ localization success, and inspection effort. In this way, RLSFLoc learns an adaptive fusion policy instead of relying on static manually defined weights.
 
-A major limitation in existing fault localization research is the gap between execution evidence, semantic evidence, and structural evidence. Execution evidence shows which program elements are involved in failed tests. Semantic evidence captures the meaning of code and bug descriptions. Structural evidence describes call relations, control-flow dependencies, data-flow links, and module-level interactions. Many existing methods use only one type of evidence or combine multiple evidence sources using fixed manually selected weights. However, the importance of each evidence source may change across different bugs, projects, and program contexts. Therefore, a fixed fusion strategy is not sufficient for robust fault localization.
-
-To address this limitation, this paper proposes \textbf{RLSFLoc}, a reinforcement learning-enhanced semantic and structural fault localization framework for scalable software fault localization. RLSFLoc integrates execution trace analysis, structural dependency graph construction, semantic code representation, RL-based adaptive fusion, and a final fault ranking engine. The proposed framework first computes execution-based suspiciousness from passed and failed test cases. It then constructs a structural dependency graph to model relationships among program elements. In parallel, semantic representations are extracted from source code and bug-related textual information. These evidence sources are normalized and adaptively fused using a reinforcement learning agent that learns how much importance should be assigned to execution, structural, and semantic scores.
-
-The motivation for using reinforcement learning is that fault localization can be formulated as a ranking-oriented decision-making problem. The goal is not only to classify whether a program element is faulty, but to rank faulty elements as high as possible so that developers can inspect fewer candidates~\cite{lethbridge1999inspect}. The reinforcement learning agent receives reward feedback based on ranking quality, Top-$k$ localization success, and inspection effort. In this way, RLSFLoc learns an adaptive fusion policy instead of relying on static manually defined weights.
-
-The proposed framework is evaluated using two widely used software engineering datasets: AEEEM~\cite{dambros2010aeeem} and Defects4J~\cite{just2014defects4j}. AEEEM is used to support defect-proneness analysis, while Defects4J is used for fine-grained fault localization evaluation. The evaluation is conducted under both within-project and cross-project settings to examine project-specific effectiveness and generalization ability. RLSFLoc is compared with representative baselines, including Ochiai~\cite{abreu2007ochiai}, Tarantula~\cite{jones2005tarantula}, DStar~\cite{wong2013dstar}, DeepFL~\cite{li2019deepfl}, learning-to-rank fault localization~\cite{xuan2014learning}, graph-based fault localization~\cite{sohn2017fluccs}, and Transformer-based fault localization~\cite{zhang2022context}.
+The proposed framework is evaluated using two widely used software engineering datasets: AEEEM \cite{dambros2010aeeem} and Defects4J \cite{just2014defects4j}. AEEEM is used to support defect-proneness analysis, while Defects4J is used for fine-grained fault localization evaluation; recent studies also document validity considerations for Defects4J-based localization \cite{abouassi2019coincidental,rafi2024cleanness}. Since localization effectiveness can vary with failure and system context, robustness claims are interpreted alongside prior applicability evidence \cite{le2013effectiveness,sha2022server}. The evaluation is conducted under both within-project and cross-project settings to examine project-specific effectiveness and generalization ability. RLSFLoc is compared with implemented baselines informed by Ochiai \cite{abreu2007ochiai}, Tarantula \cite{jones2005tarantula}, DStar \cite{wong2014dstar}, DeepFL \cite{li2019deepfl}, learning-to-rank fault localization \cite{xuan2014learning}, graph representation learning \cite{lou2021grace}, and pretrained code representation research \cite{feng2020codebert}.
 
 The main contributions of this paper are summarized as follows:
 
 \begin{itemize}
-    \item This paper proposes \textbf{RLSFLoc}, a reinforcement learning-enhanced fault localization framework that integrates execution, semantic, and structural evidence for software engineering.
+    \item This paper proposes RLSFLoc, a reinforcement learning-enhanced fault localization framework that integrates execution, semantic, and structural evidence for software engineering.
     
     \item An execution trace analysis module is developed to compute suspiciousness scores from passed and failed test cases using spectrum-based fault localization principles.
     
@@ -126,10 +121,10 @@ The main contributions of this paper are summarized as follows:
     
     \item The proposed framework is evaluated using AEEEM and Defects4J under within-project and cross-project settings.
     
-    \item A comprehensive comparison is conducted against traditional SBFL methods, deep learning-based methods, learning-to-rank methods, graph-based methods, and Transformer-based methods.
+    \item A comprehensive comparison is conducted against traditional SBFL methods and implemented learning-to-rank, graph-guided, and semantic-encoder variants.
 \end{itemize}
 
-The remainder of this paper is organized as follows. Section~\ref{sec:related_work} reviews existing studies on spectrum-based fault localization, IR-based fault localization, deep learning-based fault localization, and reinforcement learning in software engineering. Section~\ref{sec:methodology} presents the proposed RLSFLoc architecture and mathematical formulation. Section~\ref{sec:experimental_setup} describes the datasets, evaluation settings, and implementation environment. Section~\ref{sec:evaluation_metrics} defines the evaluation metrics used in this study. Section~\ref{sec:comparative_analysis} presents the comparative analysis with baseline methods. Section~\ref{sec:software_engineering_impact} discusses the practical software engineering impact of the proposed approach. Finally, Section~\ref{sec:conclusion} concludes the paper and highlights future research directions.
+The remainder of this paper is organized as follows. Section \ref{sec:related_work} reviews existing studies on spectrum-based fault localization, IR-based fault localization, deep learning-based fault localization, and reinforcement learning in software engineering. Section \ref{sec:methodology} presents the proposed RLSFLoc architecture and mathematical formulation. Section \ref{sec:experimental_setup} describes the datasets, evaluation settings, and implementation environment. Section \ref{sec:evaluation_metrics} defines the evaluation metrics used in this study. Section \ref{sec:comparative_analysis} presents the comparative analysis with baseline methods. Section \ref{sec:software_engineering_impact} discusses the practical software engineering impact of the proposed approach. Finally, Section \ref{sec:conclusion} concludes the paper and highlights future research directions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Related Work}
@@ -137,23 +132,23 @@ The remainder of this paper is organized as follows. Section~\ref{sec:related_wo
 
 \subsection{Spectrum-Based Fault Localization}
 
-Spectrum-Based Fault Localization (SBFL) is one of the most widely used approaches for automated debugging. SBFL techniques use program execution spectra collected from passed and failed test cases to calculate the suspiciousness of program elements. Common SBFL formulas include Tarantula~\cite{jones2005tarantula}, Ochiai~\cite{abreu2007ochiai}, Jaccard, and DStar~\cite{wong2013dstar}. These methods rank statements, methods, or files according to their involvement in failed executions. The main advantage of SBFL is its simplicity and low computational cost. However, SBFL mainly depends on test coverage information and often fails when several program elements have similar execution patterns. It also does not capture program semantics, source-code meaning, or dependency relationships among components. Therefore, SBFL may produce inaccurate rankings in complex software systems where faults are indirectly propagated through control-flow or data-flow dependencies.
+Spectrum-Based Fault Localization (SBFL) is one of the most widely used approaches for automated debugging \cite{wong2016survey,sarhan2022survey}. SBFL techniques use program execution spectra collected from passed and failed test cases to calculate the suspiciousness of program elements. Common SBFL formulas include Tarantula \cite{jones2005tarantula}, Ochiai \cite{abreu2007ochiai}, Jaccard, and DStar \cite{wong2014dstar}. These methods rank statements, methods, or files according to their involvement in failed executions. The main advantage of SBFL is its simplicity and low computational cost. However, SBFL mainly depends on test coverage information and often fails when several program elements have similar execution patterns. Recent refinements therefore exploit test importance, frequency, slicing, or contextual feedback \cite{zhang2017pagerank,zhang2021pagerank,beszedes2022frequency,cao2022slicing,horvath2022interactive}. It also does not capture program semantics, source-code meaning, or dependency relationships among components. Therefore, SBFL may produce inaccurate rankings in complex software systems where faults are indirectly propagated through control-flow or data-flow dependencies.
 
 \subsection{Information Retrieval-Based Fault Localization}
 
-Information Retrieval-based fault localization uses textual similarity between bug reports and source-code elements to identify suspicious program locations. These methods treat bug reports, comments, identifiers, method names, and source files as textual documents. Similarity models such as Vector Space Model, Latent Semantic Indexing, BM25, and topic modeling are commonly used to rank source-code entities. IR-based methods are useful when bug reports contain meaningful descriptions related to faulty components. However, their effectiveness depends heavily on the quality of bug reports and naming conventions used in the source code. If the bug report is incomplete, vague, or semantically different from the actual faulty code, IR-based methods may fail to localize the fault correctly. In addition, these methods usually ignore execution behavior and structural dependencies, which limits their reliability in practical debugging scenarios.
+Information Retrieval-based fault localization uses textual similarity between bug reports and source-code elements to identify suspicious program locations \cite{zhou2012buglocator,sisman2012history,saha2013bluir}. These methods treat bug reports, comments, identifiers, method names, and source files as textual documents. Structured and hybrid retrieval approaches can incorporate execution or project context \cite{le2015better,miryeganeh2021globug,chen2022pathidea,yang2024cops,li2021laprob}. IR-based methods are useful when bug reports contain meaningful descriptions related to faulty components. However, their effectiveness depends heavily on the quality of bug reports and naming conventions used in the source code \cite{chaparro2019query,mills2020queries,kim2021trustworthy}. If the bug report is incomplete, vague, or semantically different from the actual faulty code, IR-based methods may fail to localize the fault correctly. In addition, retrieval alone does not encode execution behavior and structural dependencies, which limits its reliability in practical debugging scenarios.
 
 \subsection{Deep Learning-Based Fault Localization}
 
-Deep learning has recently been applied to fault localization to automatically learn complex representations from software artifacts. Neural models can process source code, bug reports, execution traces, and program graphs to identify faulty components. Convolutional Neural Networks, Recurrent Neural Networks, Graph Neural Networks~\cite{sohn2017fluccs}, and Transformer-based models~\cite{zhang2022context} have been used to learn semantic and structural patterns from code. Compared with traditional SBFL and IR-based methods, deep learning approaches such as DeepFL~\cite{li2019deepfl} can capture deeper relationships and non-linear feature interactions. However, these methods often require large labeled datasets, high computational resources, and careful model tuning. Another limitation is that many deep learning models behave as black boxes, making it difficult for developers to understand why a specific program element is ranked as faulty. This lack of interpretability is a major concern in software engineering, where debugging decisions must be explainable and practically useful.
+Deep learning has recently been applied to fault localization to learn complex representations from software artifacts. Neural models can process source code, bug reports, execution traces, and program graphs to identify faulty components. DeepFL integrates multiple diagnostic feature dimensions \cite{li2019deepfl}, GRACE represents coverage relationships as graphs \cite{lou2021grace}, and SmartFL models program semantics using static and dynamic evidence \cite{zeng2022smartfl}. More generally, pretrained encoders such as CodeBERT and GraphCodeBERT provide semantic and data-flow-aware code representations that motivate semantic feature extraction \cite{feng2020codebert,guo2021graphcodebert}. However, learning-based methods can require substantial data, resources, and careful model tuning. Their interpretability is also important in debugging; XAI4FL directly studies explainable ranking evidence for SBFL \cite{widyasari2022xai4fl}.
 
 \subsection{Reinforcement Learning in Software Engineering}
 
-Reinforcement Learning (RL) has gained attention in software engineering because many software tasks can be modeled as sequential decision-making problems. RL has been used in areas such as automated program repair, test case prioritization, software testing, resource allocation, and code optimization. In these tasks, an agent learns an optimal policy by interacting with an environment and receiving rewards based on its actions. For fault localization, RL is useful because the task can be viewed as a ranking optimization problem. The model must decide how much importance should be given to different types of evidence, such as suspiciousness scores, semantic similarity, and structural dependencies. Unlike fixed-weight fusion methods, RL agents, using techniques such as DQN~\cite{mnih2015dqn} or PPO~\cite{schulman2017ppo}, can adaptively learn how to combine these signals according to feedback from localization performance. This makes RL suitable for improving fault ranking and reducing developer inspection effort.
+Reinforcement Learning (RL) is relevant because many software tasks can be modeled as sequential decision-making problems. For bug localization specifically, RLocator formulates ranking as a Markov decision process and reports direct optimization of MRR, MAP, and Top-$k$ measures \cite{chakraborty2024rlocator}. In RLSFLoc, the model must decide how much importance should be given to different types of evidence, such as suspiciousness scores, semantic similarity, and structural dependencies. Unlike fixed-weight fusion methods, RL agents, using techniques such as DQN \cite{mnih2015dqn} or PPO \cite{schulman2017ppo}, can adaptively learn how to combine these signals according to feedback from localization performance. This makes RL suitable for investigating improvements to fault ranking and developer inspection effort.
 
 \subsection{Comparative Analysis of Existing Approaches}
 
-Table~\ref{tab:related_work_comparison} summarizes the main categories of existing fault localization approaches. The comparison shows that each technique provides useful evidence, but no single method fully addresses the combined need for execution awareness, semantic understanding, structural reasoning, and adaptive ranking. SBFL methods are efficient but limited to coverage-based suspiciousness. IR-based methods capture textual similarity but depend heavily on bug-report quality. Deep learning methods provide richer representations but often require large training data and are less interpretable. Structural methods capture dependency relationships but may miss semantic relevance. Hybrid methods improve performance by combining multiple signals, but most of them still rely on fixed or manually assigned weights. These limitations motivate the development of an adaptive fusion strategy such as RLSFLoc.
+Table \ref{tab:related_work_comparison} summarizes the main categories of existing fault localization approaches. The comparison shows that each technique provides useful evidence, but no single method fully addresses the combined need for execution awareness, semantic understanding, structural reasoning, and adaptive ranking. SBFL methods are efficient but limited to coverage-based suspiciousness. IR-based methods capture textual similarity but depend heavily on bug-report quality. Learning-based representations offer richer models, while hybrid and learning-to-rank methods combine multiple signals \cite{xuan2014learning,le2016ltr,sohn2017fluccs,almhana2021hybrid}. Graph-based work additionally models structural or test--statement relationships \cite{zhang2017pagerank,lou2021grace}. These limitations motivate investigation of an adaptive fusion strategy such as RLSFLoc.
 
 \begin{table}[H]
 \caption{Comparative Summary of Existing Fault Localization Approaches}
@@ -220,17 +215,14 @@ Reinforcement Learning-Based Software Engineering
 
 \subsection{Research Gap}
 
-Although existing SBFL, IR-based, and deep learning methods have improved automated fault localization, several limitations remain. SBFL methods rely mainly on execution coverage and ignore semantic meaning. IR-based methods focus on textual similarity but overlook execution behavior and structural relationships. Deep learning methods can learn complex representations but often require large training datasets and provide limited interpretability. Structural methods capture dependency relations but may not effectively connect those relations with bug descriptions or semantic code meaning. Moreover, many existing hybrid methods combine different features using manually defined or fixed fusion weights. Such static fusion strategies are not flexible enough because the importance of semantic, structural, and execution-based evidence changes across different bugs, projects, and program contexts.
-
-To address these limitations, this paper proposes \textbf{RLSFLoc}, a reinforcement learning-enhanced semantic and structural fault localization approach. RLSFLoc integrates execution-based suspiciousness, semantic code representation, and structural dependency information into a unified ranking framework. The reinforcement learning component adaptively learns the optimal fusion strategy, allowing the model to improve fault localization performance while reducing developer inspection effort.
-
+Although existing SBFL, IR-based, and deep learning methods have improved automated fault localization, several limitations remain. SBFL methods rely mainly on execution coverage and ignore semantic meaning. IR-based methods focus on textual similarity but overlook execution behavior and structural relationships. Deep learning methods can learn complex representations but often require large training datasets and provide limited interpretability. Structural methods capture dependency relations but may not effectively connect those relations with bug descriptions or semantic code meaning. Moreover, many existing hybrid methods combine different features using manually defined or fixed fusion weights. Such static fusion strategies are not flexible enough because the importance of semantic, structural, and execution-based evidence changes across different bugs, projects, and program contexts. To address these limitations, this paper proposes RLSFLoc, a reinforcement learning-enhanced semantic and structural fault localization approach. RLSFLoc integrates execution-based suspiciousness, semantic code representation, and structural dependency information into a unified ranking framework. The reinforcement learning component adaptively learns the optimal fusion strategy, allowing the model to improve fault localization performance while reducing developer inspection effort.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Proposed RLSFLoc Architecture}
 \label{sec:methodology}
 
-The proposed RLSFLoc architecture is designed to improve software fault localization by combining execution-based suspiciousness, structural dependency information, semantic code representation, and reinforcement learning-based adaptive fusion. Instead of depending on a single evidence source, RLSFLoc integrates multiple complementary signals to produce a more reliable fault ranking. The complete pipeline includes execution trace analysis, structural dependency graph construction, semantic code representation, mathematical score normalization, RL-based adaptive fusion, and final fault ranking. Figure~\ref{fig:rlsfloc_architecture} shows the proposed research methodology.
+The proposed RLSFLoc architecture is designed to improve software fault localization by combining execution-based suspiciousness, structural dependency information, semantic code representation, and reinforcement learning-based adaptive fusion. Instead of depending on a single evidence source, RLSFLoc integrates multiple complementary signals to produce a more reliable fault ranking. The complete pipeline includes execution trace analysis, structural dependency graph construction, semantic code representation, mathematical score normalization, RL-based adaptive fusion, and final fault ranking. Figure \ref{fig:rlsfloc_architecture} shows the proposed research methodology.
 
 \begin{figure}[H]
 \centering
@@ -241,9 +233,7 @@ The proposed RLSFLoc architecture is designed to improve software fault localiza
 
 \subsection{Execution Trace Analysis}
 
-The first component of RLSFLoc analyzes program execution traces collected from passed and failed test cases. Each program element, such as a file, method, or statement, is examined according to its involvement in successful and failed executions. Based on this information, an initial suspiciousness score is calculated using spectrum-based fault localization principles.
-
-Let $e$ represent a program element. The execution statistics of $e$ are defined as follows:
+The first component of RLSFLoc analyzes program execution traces collected from passed and failed test cases. Each program element, such as a file, method, or statement, is examined according to its involvement in successful and failed executions. Based on this information, an initial suspiciousness score is calculated using spectrum-based fault localization principles. Let $e$ represent a program element. The execution statistics of $e$ are defined as follows:
 
 \begin{itemize}
     \item $n_{ef}$: number of failed test cases that execute $e$,
@@ -479,15 +469,11 @@ where $\pi^*$ is the optimal policy, $\gamma \in [0,1]$ is the discount factor, 
 
 \subsection{RL-Based Adaptive Fusion}
 
-The RL-based adaptive fusion module learns how to combine execution-based, structural, and semantic evidence. Traditional hybrid methods use fixed manually selected weights, but such weights may not work equally well for all bugs and projects. In RLSFLoc, the reinforcement learning agent observes the normalized evidence vector of program elements and learns a fusion policy that improves the final ranking.
-
-The action of the agent corresponds to selecting or adjusting the fusion weight vector $\boldsymbol{\lambda}$. A higher weight may be assigned to execution evidence when failed-test coverage is highly discriminative, while semantic or structural evidence may receive higher weight when textual or dependency information is more informative. Through reward feedback, the agent learns to assign more suitable weights for different debugging contexts.
+The RL-based adaptive fusion module learns how to combine execution-based, structural, and semantic evidence. Traditional hybrid methods use fixed manually selected weights, but such weights may not work equally well for all bugs and projects. In RLSFLoc, the reinforcement learning agent observes the normalized evidence vector of program elements and learns a fusion policy that improves the final ranking. The action of the agent corresponds to selecting or adjusting the fusion weight vector $\boldsymbol{\lambda}$. A higher weight may be assigned to execution evidence when failed-test coverage is highly discriminative, while semantic or structural evidence may receive higher weight when textual or dependency information is more informative. Through reward feedback, the agent learns to assign more suitable weights for different debugging contexts.
 
 \subsection{Fault Ranking Engine}
 
-The final component is the fault ranking engine. After computing the fused suspiciousness score for each program element, all elements are sorted in descending order. The output is a ranked list of suspicious files, methods, or statements. Developers can inspect the highest-ranked elements first, reducing the time and effort required for debugging.
-
-The final output of RLSFLoc is represented as:
+The final component is the fault ranking engine. After computing the fused suspiciousness score for each program element, all elements are sorted in descending order. The output is a ranked list of suspicious files, methods, or statements. Developers can inspect the highest-ranked elements first, reducing the time and effort required for debugging. The final output of RLSFLoc is represented as:
 
 \begin{equation}
 \mathcal{R} = \{v_1, v_2, ..., v_k\}
@@ -495,7 +481,7 @@ The final output of RLSFLoc is represented as:
 
 where $\mathcal{R}$ denotes the ranked list of suspicious program elements and $k$ denotes the number of elements returned to the developer.
 
-Overall, the proposed RLSFLoc architecture improves fault localization by integrating three complementary evidence sources. Execution trace analysis identifies elements frequently involved in failed tests, structural dependency analysis captures relationships among program elements, and semantic representation measures conceptual similarity between code and bug reports. The reinforcement learning module adaptively learns how to combine these signals, while the fault ranking engine produces the final prioritized list for developer inspection.
+The proposed RLSFLoc architecture improves fault localization by integrating three complementary evidence sources. Execution trace analysis identifies elements frequently involved in failed tests, structural dependency analysis captures relationships among program elements, and semantic representation measures conceptual similarity between code and bug reports. The reinforcement learning module adaptively learns how to combine these signals, while the fault ranking engine produces the final prioritized list for developer inspection.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -508,7 +494,7 @@ This section describes the experimental setup used to evaluate the proposed RLSF
 
 \subsubsection{AEEEM Dataset}
 
-The AEEEM dataset was used to evaluate the defect-proneness analysis component of the proposed framework. It contains software defect data collected from real-world Java projects. Each project includes software metrics, source-code features, and defect labels. In this study, AEEEM was used to support project-level and file-level defect prediction before fine-grained fault localization.
+The AEEEM dataset was used to evaluate the defect-proneness analysis component of the proposed framework. It contains software defect data collected from real-world Java projects. Each project includes software metrics, source-code features, and defect labels \cite{dambros2010aeeem}. In this study, AEEEM was used to support project-level and file-level defect prediction before fine-grained fault localization.
 
 Let the AEEEM dataset be represented as:
 
@@ -520,7 +506,7 @@ where $x_i$ represents the feature vector of the $i$-th software module and $y_i
 
 \subsubsection{Defects4J Dataset}
 
-Defects4J was used for fine-grained fault localization evaluation. It contains real bugs from open-source Java projects, along with buggy and fixed program versions, developer-written test cases, and fault-revealing tests. This dataset is suitable for evaluating statement-level, method-level, and file-level fault localization methods.
+Defects4J was used for fine-grained fault localization evaluation. It contains real bugs from open-source Java projects, along with buggy and fixed program versions, developer-written test cases, and fault-revealing tests \cite{just2014defects4j}. Its use in fault localization also requires attention to coincidental correctness and data-cleanness effects \cite{abouassi2019coincidental,rafi2024cleanness}. This dataset is suitable for evaluating statement-level, method-level, and file-level fault localization methods, and has been evaluated beyond Java subjects in recent SBFL evidence \cite{widyasari2022python}.
 
 Let the Defects4J benchmark be represented as:
 
@@ -602,7 +588,7 @@ This setting is more challenging than within-project evaluation because source a
 
 All experiments were implemented in Python using standard machine learning and software analysis libraries. Execution traces were collected from test results, structural dependencies were extracted from source-code relationships, and semantic vectors were generated from tokenized code and textual descriptions. The reinforcement learning module was trained to optimize the fusion weights based on ranking feedback.
 
-The main experimental configuration is summarized in Table~\ref{tab:experimental_configuration}.
+The main experimental configuration is summarized in Table \ref{tab:experimental_configuration}.
 
 \begin{table}[H]
 \caption{Experimental Configuration of RLSFLoc}
@@ -864,7 +850,7 @@ Lower memory overhead indicates better scalability.
 
 \subsection{Summary of Metric Interpretation}
 
-Table~\ref{tab:evaluation_metrics} summarizes the evaluation metrics used in this study.
+Table \ref{tab:evaluation_metrics} summarizes the evaluation metrics used in this study.
 
 \begin{table}[H]
 \caption{Evaluation Metrics Used in RLSFLoc}
@@ -893,11 +879,11 @@ Memory Overhead & Scalability & Lower is better \\
 
 This section presents the final, verified experimental results of the proposed RLSFLoc framework. The evaluation was conducted using ranking-based, effort-based, and computational efficiency metrics under both within-project and cross-project settings.
 
-Table~\ref{tab:defects4j_results} reports the exact overall metrics, while Figure~\ref{fig:topk_comparison} visualizes the Top-$k$ early ranking comparison trend across methods.
+Table \ref{tab:defects4j_results} reports the exact overall metrics, while Figure \ref{fig:topk_comparison} visualizes the Top-$k$ early ranking comparison trend across methods.
 
 \subsection{Overall Defects4J Performance}
 
-Table~\ref{tab:defects4j_results} presents the overall fault localization performance of RLSFLoc compared to state-of-the-art baselines on the Defects4J benchmark. 
+Table \ref{tab:defects4j_results} presents the overall fault localization performance of RLSFLoc compared to implemented baseline variants on the Defects4J benchmark. Published sources identify the method families that informed each implementation; the reported measurements are from this study rather than values copied from those papers.
 
 \begin{table}[H]
 \caption{Overall Fault Localization Performance on Defects4J}
@@ -909,20 +895,20 @@ Table~\ref{tab:defects4j_results} presents the overall fault localization perfor
 \hline
 \textbf{Method} & \textbf{Top-1} & \textbf{Top-3} & \textbf{Top-5} & \textbf{Top-10} & \textbf{MRR} & \textbf{MAP} & \textbf{EXAM} & \textbf{Runtime (s)} \\
 \hline
-Tarantula~\cite{jones2005tarantula} & 0.00 & 0.50 & 0.50 & 0.50 & 0.2264 & 0.2264 & 0.2250 & 0.0284 \\
-Ochiai~\cite{abreu2007ochiai} & 0.15 & 0.50 & 0.55 & 0.75 & 0.3664 & 0.3664 & 0.1160 & 0.0322 \\
-DStar~\cite{wong2013dstar} & 0.15 & 0.70 & 0.85 & 0.85 & 0.4642 & 0.4642 & 0.0812 & 0.0280 \\
-Graph-Only~\cite{sohn2017fluccs} & 0.40 & 0.50 & 0.50 & 0.50 & 0.4596 & 0.4596 & 0.2922 & 0.0280 \\
-Transformer-Only~\cite{zhang2022context} & 0.25 & 0.50 & 0.50 & 0.50 & 0.3830 & 0.3830 & 0.2364 & 0.0274 \\
-DeepFL-like MLP~\cite{li2019deepfl} & 0.00 & 0.00 & 0.00 & 0.00 & 0.0255 & 0.0255 & 0.8490 & 0.0435 \\
-RankNet LTR~\cite{xuan2014learning} & 0.50 & 0.65 & 0.85 & 0.95 & 0.6339 & 0.6339 & 0.0524 & 0.0435 \\
+Tarantula \cite{jones2005tarantula} & 0.00 & 0.50 & 0.50 & 0.50 & 0.2264 & 0.2264 & 0.2250 & 0.0284 \\
+Ochiai \cite{abreu2007ochiai} & 0.15 & 0.50 & 0.55 & 0.75 & 0.3664 & 0.3664 & 0.1160 & 0.0322 \\
+DStar \cite{wong2014dstar} & 0.15 & 0.70 & 0.85 & 0.85 & 0.4642 & 0.4642 & 0.0812 & 0.0280 \\
+Graph-guided variant \cite{lou2021grace} & 0.40 & 0.50 & 0.50 & 0.50 & 0.4596 & 0.4596 & 0.2922 & 0.0280 \\
+Semantic-encoder variant \cite{feng2020codebert} & 0.25 & 0.50 & 0.50 & 0.50 & 0.3830 & 0.3830 & 0.2364 & 0.0274 \\
+DeepFL-like MLP \cite{li2019deepfl} & 0.00 & 0.00 & 0.00 & 0.00 & 0.0255 & 0.0255 & 0.8490 & 0.0435 \\
+RankNet LTR \cite{xuan2014learning} & 0.50 & 0.65 & 0.85 & 0.95 & 0.6339 & 0.6339 & 0.0524 & 0.0435 \\
 \textbf{RLSFLoc (PPO)} & \textbf{0.80} & \textbf{1.00} & \textbf{1.00} & \textbf{1.00} & \textbf{0.8917} & \textbf{0.8917} & \textbf{0.0230} & \textbf{0.0587} \\
 \hline
 \end{tabular}
 }
 \end{table}
 
-The exact numerical results show that RLSFLoc (PPO) outperforms all other methods across nearly every localization metric. Specifically, RLSFLoc achieves a Top-1 accuracy of 0.80, and perfect Top-3, Top-5, and Top-10 accuracies (1.00), demonstrating a very strong capability in ranking the actual faulty element first. The MRR and MAP of RLSFLoc are both 0.8917, representing a substantial improvement over the next best baseline, RankNet LTR (MRR/MAP of 0.6339), and DStar (MRR/MAP of 0.4642). In terms of inspection effort, RLSFLoc yields a mean EXAM score of 0.0230, which means developers only need to inspect 2.30\% of the program elements before discovering the actual bug. While simple SBFL methods require slightly less execution time, the 58.7 ms localization latency of RLSFLoc is highly viable for real-world interactive debugging.
+The exact numerical results show that RLSFLoc (PPO) outperforms all other methods across nearly every localization metric. Specifically, RLSFLoc achieves a Top-1 accuracy of 0.80, and provides the best observed Top-3, Top-5, and Top-10 accuracies (1.00) in this experiment, demonstrating a very strong capability in ranking the actual faulty element first. The MRR and MAP of RLSFLoc are both 0.8917, representing a substantial improvement over the next best baseline, RankNet LTR (MRR/MAP of 0.6339), and DStar (MRR/MAP of 0.4642). In terms of inspection effort, RLSFLoc yields a mean EXAM score of 0.0230, which means developers only need to inspect 2.30\% of the program elements before discovering the actual bug. While simple SBFL methods require slightly less execution time, the 58.7 ms localization latency of RLSFLoc is highly viable for real-world interactive debugging.
 
 \begin{figure}[H]
 \centering
@@ -931,7 +917,7 @@ The exact numerical results show that RLSFLoc (PPO) outperforms all other method
 \label{fig:topk_comparison}
 \end{figure}
 
-Figure~\ref{fig:topk_comparison} visually demonstrates the early ranking localization superiority of RLSFLoc, illustrating the percentage of bugs successfully localized within the top $k$ candidates. Additionally, Figure~\ref{fig:mrr_comparison} visualizes the MRR means and Figure~\ref{fig:exam_reduction} illustrates the horizontal comparison of the developer inspection effort (EXAM score) across all evaluated methods.
+Figure \ref{fig:topk_comparison} visually demonstrates the early ranking localization superiority of RLSFLoc, illustrating the percentage of bugs successfully localized within the top $k$ candidates. Additionally, Figure \ref{fig:mrr_comparison} visualizes the MRR means and Figure \ref{fig:exam_reduction} illustrates the horizontal comparison of the developer inspection effort (EXAM score) across all evaluated methods.
 
 \begin{figure}[H]
 \centering
@@ -949,7 +935,7 @@ Figure~\ref{fig:topk_comparison} visually demonstrates the early ranking localiz
 
 \subsection{Within-Project and Cross-Project Generalization}
 
-Table~\ref{tab:within_cross_project} presents the performance of RLSFLoc under within-project and cross-project settings.
+Table \ref{tab:within_cross_project} presents the performance of RLSFLoc under within-project and cross-project settings.
 
 \begin{table}[H]
 \caption{Within-Project and Cross-Project Evaluation of RLSFLoc}
@@ -968,11 +954,11 @@ Cross-Project & 0.60 & 0.85 & 0.90 & 0.95 & 0.7431 & 0.0384 \\
 }
 \end{table}
 
-The numerical metrics indicate that while within-project performance is slightly stronger due to homogeneous code patterns, RLSFLoc generalizes exceptionally well under cross-project settings, achieving an MRR of 0.7431 and requiring an inspection of only 3.84\% of the codebase (EXAM score of 0.0384).
+The numerical metrics indicate that while within-project performance is slightly stronger due to homogeneous code patterns, RLSFLoc maintains competitive cross-project performance in this experimental setting, achieving an MRR of 0.7431 and requiring an inspection of only 3.84\% of the codebase (EXAM score of 0.0384).
 
 \subsection{Ablation Study}
 
-Table~\ref{tab:ablation_study} reports the ablation study of RLSFLoc variants to demonstrate the contribution of execution trace analysis, semantic embeddings, structural dependency graphs, and reinforcement learning-based adaptive fusion.
+Table \ref{tab:ablation_study} reports the ablation study of RLSFLoc variants to demonstrate the contribution of execution trace analysis, semantic embeddings, structural dependency graphs, and reinforcement learning-based adaptive fusion.
 
 \begin{table}[H]
 \caption{Ablation Study of RLSFLoc Components}
@@ -994,9 +980,9 @@ Execution + Semantic + Structural (No RL) & 0.65 & 1.00 & 1.00 & 0.7915 & 0.0312
 }
 \end{table}
 
-The exact numerical results show that isolated execution evidence provides a weak Top-1 of 0.15. The addition of semantic embeddings and structural dependencies continuously improves all metric scores. Crucially, the Full RLSFLoc model featuring our RL-based PPO fusion agent provides a significant boost (Top-1 increases from 0.65 to 0.80, and MRR jumps from 0.7915 to 0.8917), validating that adaptive weight learning is vastly superior to static, equal-weight fusion.
+The numerical results show that isolated execution evidence provides a Top-1 of 0.15. The addition of semantic embeddings and structural dependencies improves the reported metric scores. In this experiment, the full RLSFLoc model featuring the RL-based PPO fusion agent improves Top-1 from 0.65 to 0.80 and MRR from 0.7915 to 0.8917 relative to the non-RL variant.
 
-Figure~\ref{fig:ablation_trend} visualizes the continuous ablation trend as a 2D simplex MRR landscape heatmap, demonstrating how optimal ranking performance resides near our learned reinforcement learning weights.
+Figure \ref{fig:ablation_trend} visualizes the continuous ablation trend as a 2D simplex MRR landscape heatmap, demonstrating how optimal ranking performance resides near our learned reinforcement learning weights.
 
 \begin{figure}[H]
 \centering
@@ -1007,7 +993,7 @@ Figure~\ref{fig:ablation_trend} visualizes the continuous ablation trend as a 2D
 
 \subsection{Project-Wise Performance}
 
-Table~\ref{tab:project_wise_results} breaks down the RLSFLoc evaluation across six standard Defects4J software projects.
+Table \ref{tab:project_wise_results} breaks down the RLSFLoc evaluation across six standard Defects4J software projects.
 
 \begin{table}[H]
 \caption{Project-Wise Fault Localization Performance of RLSFLoc on Defects4J}
@@ -1036,7 +1022,7 @@ The project-wise values reflect consistent and robust performance across all lib
 
 \subsection{Computational Overhead and Efficiency}
 
-Table~\ref{tab:efficiency_memory} reports the exact runtime and peak memory consumption of all evaluated fault localization frameworks.
+Table \ref{tab:efficiency_memory} reports the exact runtime and peak memory consumption of all evaluated fault localization frameworks.
 
 \begin{table}[H]
 \caption{Runtime and Memory Overhead Comparison}
@@ -1048,44 +1034,46 @@ Table~\ref{tab:efficiency_memory} reports the exact runtime and peak memory cons
 \hline
 \textbf{Method} & \textbf{Runtime per Bug (s)} & \textbf{Peak Memory (MB)} & \textbf{Computational Profile} \\
 \hline
-Tarantula~\cite{jones2005tarantula} & 0.0284 & 0.1059 & Low-cost spectrum analysis \\
-Ochiai~\cite{abreu2007ochiai} & 0.0322 & 0.1399 & Low-cost spectrum analysis \\
-DStar~\cite{wong2013dstar} & 0.0280 & 0.1047 & Low-cost spectrum analysis \\
-Graph-Only~\cite{sohn2017fluccs} & 0.0280 & 0.1072 & Dependency graph propagation \\
-Transformer-Only~\cite{zhang2022context} & 0.0274 & 0.1047 & Contextual code representation \\
-DeepFL-like MLP~\cite{li2019deepfl} & 0.0435 & 0.1061 & Neural feature learning \\
-RankNet LTR~\cite{xuan2014learning} & 0.0435 & 0.1047 & Feature-based ranking \\
+Tarantula \cite{jones2005tarantula} & 0.0284 & 0.1059 & Low-cost spectrum analysis \\
+Ochiai \cite{abreu2007ochiai} & 0.0322 & 0.1399 & Low-cost spectrum analysis \\
+DStar \cite{wong2014dstar} & 0.0280 & 0.1047 & Low-cost spectrum analysis \\
+Graph-guided variant \cite{lou2021grace} & 0.0280 & 0.1072 & Dependency graph propagation \\
+Semantic-encoder variant \cite{feng2020codebert} & 0.0274 & 0.1047 & Contextual code representation \\
+DeepFL-like MLP \cite{li2019deepfl} & 0.0435 & 0.1061 & Neural feature learning \\
+RankNet LTR \cite{xuan2014learning} & 0.0435 & 0.1047 & Feature-based ranking \\
 \textbf{RLSFLoc (PPO)} & \textbf{0.0587} & \textbf{0.1496} & Multi-evidence RL fusion \\
 \hline
 \end{tabular}
 }
 \end{table}
 
-As expected, basic SBFL methods operate with minimal latency. However, RLSFLoc only introduces a minor computational cost (58.7 ms inference latency per bug and a peak memory profile of 0.1496 MB), which is completely negligible for version control hooks and CI/CD pipelines.
+As expected, basic SBFL methods operate with minimal latency. However, RLSFLoc only introduces a minor computational cost (58.7 ms inference latency per bug and a peak memory profile of 0.1496 MB), which is moderate and acceptable for post-test fault localization workflows.
 
-Figure~\ref{fig:runtime_memory_tradeoff} visually compares the runtime latency and peak memory profiles across all framework options.
+Figure \ref{fig:runtime_memory_tradeoff} visually compares the runtime latency and peak memory profiles across all framework options.
 
 \begin{figure}[H]
 \centering
+
 \begin{minipage}{0.48\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/runtime_comparison.png}
-    \caption{Average runtime latency comparison per bug localization task.}
-    \label{fig:runtime_comparison}
+    \caption*{(a) Average runtime latency comparison per bug localization task.}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/memory_overhead.png}
-    \caption{Peak computational memory overhead profiles.}
-    \label{fig:memory_overhead}
+    \caption*{(b) Peak computational memory overhead profiles.}
 \end{minipage}
+
+\caption{Runtime latency and peak memory trade-off across the evaluated fault localization methods.}
 \label{fig:runtime_memory_tradeoff}
+
 \end{figure}
 
 \subsection{Adaptive Fusion Analysis}
 
-Table~\ref{tab:rl_weight_analysis} lists the average weights learned by our Proximal Policy Optimization (PPO) agent across within-project and cross-project splits.
+Table \ref{tab:rl_weight_analysis} lists the average weights learned by our Proximal Policy Optimization (PPO) agent across within-project and cross-project splits.
 
 \begin{table}[H]
 \caption{Average RL-Learned Fusion Weights}
@@ -1103,7 +1091,7 @@ Average & 0.40 & 0.36 & 0.24 \\
 \end{tabular}
 \end{table}
 
-The weight distribution confirms that execution trace analysis remains the dominant signal ($\lambda_1 = 0.40$), while structural graph propagation ($\lambda_2 = 0.36$) and semantic code representations ($\lambda_3 = 0.24$) contribute essential complementary scores. Figure~\ref{fig:rl_convergence} visualizes how the reinforcement learning agent achieves convergence on the probability simplex during training over 40 episodes.
+The weight distribution suggests that execution trace analysis remains the dominant signal ($\lambda_1 = 0.40$), while structural graph propagation ($\lambda_2 = 0.36$) and semantic code representations ($\lambda_3 = 0.24$) contribute essential complementary scores. Figure \ref{fig:rl_convergence} visualizes how the reinforcement learning agent achieves convergence on the probability simplex during training over 40 episodes.
 
 \begin{figure}[H]
 \centering
@@ -1112,18 +1100,18 @@ The weight distribution confirms that execution trace analysis remains the domin
 \label{fig:rl_convergence}
 \end{figure}
 
-Figure~\ref{fig:dependency_graph} illustrates the multi-granular program structural dependency graph extracted from code call trees and class interactions, which serves as the foundation for our structural propagation.
+Figure \ref{fig:dependency_graph} provides an illustrative example of the multi-granular structural dependency graph used to explain the dependency-aware propagation process.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.70\textwidth]{figures/dependency_graph.png}
-\caption{Visual representation of the structural dependency graph constructed for multi-granular call and flow relationships.}
+\caption{Illustrative example of a multi-granular structural dependency graph showing class-level, method-level, and statement-level relationships used to motivate dependency-aware propagation.}
 \label{fig:dependency_graph}
 \end{figure}
 
 \subsection{Parameter Sensitivity Sweep}
 
-Table~\ref{tab:sensitivity_alpha} lists the exact MRR and EXAM score results for structural dependency propagation coefficient $\alpha$ sweeps.
+Table \ref{tab:sensitivity_alpha} lists the exact MRR and EXAM score results for structural dependency propagation coefficient $\alpha$ sweeps.
 
 \begin{table}[H]
 \caption{Sensitivity Analysis of Structural Propagation Coefficient $\alpha$}
@@ -1144,7 +1132,7 @@ $\boldsymbol{\alpha}$ & \textbf{Top-1} & \textbf{Top-5} & \textbf{MRR} & \textbf
 \end{tabular}
 \end{table}
 
-The optimal value is achieved at $\alpha = 0.60$, demonstrating that incorporating 60\% structural propagation from neighboring program elements balances localized execution suspicion and structural context perfectly. Figure~\ref{fig:sensitivity_alpha} visualizes the average validation reward curve across the full sweep.
+ The best observed result is obtained at $\alpha = 0.60$, suggesting that moderate structural propagation provides a suitable trade-off between localized execution suspiciousness and dependency-aware contextual information in this experiment. Figure \ref{fig:sensitivity_alpha} visualizes the average validation reward curve across the full sweep.
 
 \begin{figure}[H]
 \centering
@@ -1155,7 +1143,7 @@ The optimal value is achieved at $\alpha = 0.60$, demonstrating that incorporati
 
 \subsection{Statistical Significance Validation}
 
-Table~\ref{tab:statistical_significance} presents the exact Wilcoxon signed-rank and Cliff's Delta tests comparing RLSFLoc (PPO) side-by-side with all 7 baselines.
+Table \ref{tab:statistical_significance} presents the exact Wilcoxon signed-rank and Cliff's Delta tests comparing RLSFLoc (PPO) side-by-side with all 7 baselines.
 
 \begin{table}[H]
 \caption{Statistical Significance Analysis of RLSFLoc against Baseline Methods}
@@ -1167,44 +1155,44 @@ Table~\ref{tab:statistical_significance} presents the exact Wilcoxon signed-rank
 \hline
 \textbf{Comparison} & \textbf{Metric} & \textbf{Wilcoxon $p$-value} & \textbf{Cliff's Delta $d$} & \textbf{Effect Size} \\
 \hline
-RLSFLoc vs. Tarantula~\cite{jones2005tarantula} & MRR & $0.0003$ & $+0.9350$ & Large \\
-RLSFLoc vs. Ochiai~\cite{abreu2007ochiai} & MRR & $0.0009$ & $+0.7525$ & Large \\
-RLSFLoc vs. DStar~\cite{wong2013dstar} & MRR & $0.0015$ & $+0.6925$ & Large \\
-RLSFLoc vs. Graph-Only~\cite{sohn2017fluccs} & MRR & $0.0022$ & $+0.5050$ & Large \\
-RLSFLoc vs. Transformer-Only~\cite{zhang2022context} & MRR & $0.0006$ & $+0.6575$ & Large \\
-RLSFLoc vs. DeepFL MLP~\cite{li2019deepfl} & MRR & $0.0001$ & $+1.0000$ & Large \\
-RLSFLoc vs. RankNet LTR~\cite{xuan2014learning} & MRR & $0.1471$ & $+0.1675$ & Small \\
+RLSFLoc vs. Tarantula \cite{jones2005tarantula} & MRR & $0.0003$ & $+0.9350$ & Large \\
+RLSFLoc vs. Ochiai \cite{abreu2007ochiai} & MRR & $0.0009$ & $+0.7525$ & Large \\
+RLSFLoc vs. DStar \cite{wong2014dstar} & MRR & $0.0015$ & $+0.6925$ & Large \\
+RLSFLoc vs. Graph-guided variant \cite{lou2021grace} & MRR & $0.0022$ & $+0.5050$ & Large \\
+RLSFLoc vs. Semantic-encoder variant \cite{feng2020codebert} & MRR & $0.0006$ & $+0.6575$ & Large \\
+RLSFLoc vs. DeepFL MLP \cite{li2019deepfl} & MRR & $0.0001$ & $+1.0000$ & Large \\
+RLSFLoc vs. RankNet LTR \cite{xuan2014learning} & MRR & $0.1471$ & $+0.1675$ & Small \\
 \hline
 \end{tabular}
 }
 \end{table}
 
-The Wilcoxon $p$-value is far below the standard significance threshold ($p < 0.01$) for all comparisons except RankNet LTR ($p = 0.1471$). The Cliff's Delta effect size is classified as "Large" ($d > 0.474$) for all 6 traditional and isolated baselines, and "Small" ($d = +0.1675$) for RankNet LTR. This indicates that RLSFLoc delivers a highly significant performance improvement over traditional coverage and isolated semantic/structural techniques, and remains extremely competitive with deep learning LTR baselines.
-
-Figures~\ref{fig:significance_plot} and~\ref{fig:exam_significance_plot} visualize the boxplot distribution of Reciprocal Ranks and EXAM scores, respectively, for all evaluated methods.
+The Wilcoxon $p$-value is far below the standard significance threshold ($p < 0.01$) for all comparisons except RankNet LTR ($p = 0.1471$). The Cliff's Delta effect size is classified as "Large" ($d > 0.474$) for all 6 traditional and isolated baselines, and "Small" ($d = +0.1675$) for RankNet LTR. This indicates that RLSFLoc delivers a highly significant performance improvement over traditional coverage and isolated semantic/structural techniques, and remains extremely competitive with deep learning LTR baselines. Figure \ref{fig:statistical_distribution} visualizes the Reciprocal Rank and EXAM score distributions across the evaluated methods.
 
 \begin{figure}[H]
 \centering
+
 \begin{minipage}{0.48\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/significance_plot.png}
-    \caption{Reciprocal Rank (RR) boxplot distributions across baselines.}
-    \label{fig:significance_plot}
+    \caption*{(a) Reciprocal Rank distribution.}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/exam_significance_plot.png}
-    \caption{EXAM score boxplot distributions across baselines.}
-    \label{fig:exam_significance_plot}
+    \caption*{(b) EXAM score distribution.}
 \end{minipage}
+
+\caption{Statistical comparison of Reciprocal Rank and EXAM score distributions across evaluated methods.}
+\label{fig:statistical_distribution}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Comparative Analysis}
 \label{sec:comparative_analysis}
 
-This section compares the proposed RLSFLoc framework with representative fault localization baselines. The comparison includes traditional spectrum-based fault localization methods, deep learning-based methods, learning-to-rank methods, graph-based methods, and Transformer-based methods. The purpose of this analysis is to examine whether reinforcement learning-based adaptive fusion provides a stronger fault-ranking strategy than fixed-formula, static feature-fusion, and representation-learning approaches.
+This section compares the proposed RLSFLoc framework with representative implemented fault localization baselines. The comparison includes traditional spectrum-based formulas and learning-to-rank, graph-guided, and semantic-encoder variants motivated by prior work. The purpose of this analysis is to examine whether reinforcement learning-based adaptive fusion provides a stronger fault-ranking strategy than fixed-formula, static feature-fusion, and representation-learning approaches in the reported implementation.
 
 \subsection{Baseline Methods}
 
@@ -1220,75 +1208,53 @@ This section compares the proposed RLSFLoc framework with representative fault l
 
 \textbf{Graph-Based FL:} Graph-based fault localization methods use program dependency graphs, call graphs, control-flow graphs, or data-flow graphs to propagate suspiciousness among related program elements. These methods capture structural fault propagation but may not fully capture semantic relevance to bug reports.
 
-\textbf{Transformer-Based FL:} Transformer-based fault localization methods use self-attention mechanisms to learn contextual code and bug-report representations. They are powerful for semantic modeling, but they usually require more computational resources and larger training data.
+\textbf{Semantic-Encoder Variant:} Pretrained code encoders learn contextual code representations, with CodeBERT and GraphCodeBERT providing established semantic and data-flow-aware foundations \cite{feng2020codebert,guo2021graphcodebert}. The implemented semantic-encoder variant is evaluated as a representation-based comparison point.
 
 \subsection{Quantitative Comparison}
 
-As shown in Table~\ref{tab:defects4j_results}, RLSFLoc achieves the strongest overall ranking performance in terms of Top-1, Top-3, Top-10, MRR, and MAP. Compared with traditional SBFL methods such as Tarantula, Ochiai, and DStar, RLSFLoc provides a clear improvement because it does not rely only on test coverage. The addition of semantic representation and structural dependency propagation allows the model to distinguish program elements that have similar execution spectra.
-
-The results in Table~\ref{tab:defects4j_results} also show that RLSFLoc improves over DeepFL, learning-to-rank FL, and graph-based FL in most ranking-based metrics. This indicates that adaptive fusion is beneficial when different evidence sources contribute differently across bugs. However, RLSFLoc does not achieve the lowest runtime because it requires semantic embedding, graph construction, and reinforcement learning-based fusion. This trade-off is expected because the proposed method performs more analysis than formula-based SBFL methods.
-
-Transformer-based FL achieves the best Top-5 and EXAM scores in Table~\ref{tab:defects4j_results}, while RLSFLoc achieves better Top-1, Top-3, Top-10, MRR, and MAP values. This indicates that Transformer-based FL is competitive in reducing inspection effort, but RLSFLoc is more effective in ranking the actual faulty element near the top positions. Since early ranking is highly important for developer productivity, the improvement in Top-1 and MRR is practically meaningful.
+As shown in Table \ref{tab:defects4j_results}, RLSFLoc achieves the strongest overall ranking performance in terms of Top-1, Top-3, Top-10, MRR, and MAP. Compared with traditional SBFL methods such as Tarantula, Ochiai, and DStar, RLSFLoc provides a clear improvement because it does not rely only on test coverage. The addition of semantic representation and structural dependency propagation allows the model to distinguish program elements that have similar execution spectra. The results in Table \ref{tab:defects4j_results} also show that RLSFLoc improves over DeepFL, learning-to-rank FL, and graph-based FL in most ranking-based metrics. This indicates that adaptive fusion is beneficial when different evidence sources contribute differently across bugs. However, RLSFLoc does not achieve the lowest runtime because it requires semantic embedding, graph construction, and reinforcement learning-based fusion. This trade-off is expected because the proposed method performs more analysis than formula-based SBFL methods. The semantic-encoder variant provides a representation-based comparison point in Table \ref{tab:defects4j_results}, while RLSFLoc reports better Top-1, Top-3, Top-10, MRR, and MAP values in this experiment. Since early ranking is important for developer productivity \cite{parnin2011debugging,kochhar2016practitioners}, the improvement in Top-1 and MRR is practically relevant to examine.
 
 \subsection{Within-Project and Cross-Project Comparison}
 
-Table~\ref{tab:within_cross_project} shows that RLSFLoc performs better in the within-project setting than in the cross-project setting. This result is theoretically expected because within-project training and testing data share the same project-specific coding style, structural organization, test design, and defect distribution. In contrast, cross-project evaluation is more difficult because the model must generalize to unseen projects.
-
-The cross-project results remain competitive, with Top-10 accuracy of 0.792 and MRR of 0.548. This suggests that combining execution, structural, and semantic evidence helps RLSFLoc maintain generalization ability even when the target project differs from the source projects. However, the lower cross-project values also show that project distribution shift remains an important challenge.
+Table \ref{tab:within_cross_project} shows that RLSFLoc performs better in the within-project setting than in the cross-project setting. This result is theoretically expected because within-project training and testing data share the same project-specific coding style, structural organization, test design, and defect distribution. In contrast, cross-project evaluation is more difficult because the model must generalize to unseen projects. The cross-project results remain competitive, with Top-10 accuracy of 0.95 and MRR of 0.7431, although they are lower than the within-project results. This suggests that combining execution, structural, and semantic evidence helps RLSFLoc maintain generalization ability even when the target project differs from the source projects. However, the lower cross-project values also show that project distribution shift remains an important challenge.
 
 \subsection{Component-Level Comparison}
 
-The ablation results in Table~\ref{tab:ablation_study} demonstrate the contribution of each component in RLSFLoc. The execution-only variant performs similarly to strong SBFL-style behavior because it relies mainly on test coverage. Adding semantic evidence improves Top-1 and MRR by introducing textual and conceptual relevance between bug descriptions and source-code elements. Adding structural evidence further improves localization by modeling dependency relationships among program elements.
-
-The full RLSFLoc model achieves the strongest ablation performance because the RL-based fusion module adaptively combines all three evidence sources. This result supports the main assumption of the proposed framework: execution, semantic, and structural features are complementary, and their importance should be learned rather than fixed manually.
+The ablation results in Table \ref{tab:ablation_study} demonstrate the contribution of each component in RLSFLoc. The execution-only variant performs similarly to strong SBFL-style behavior because it relies mainly on test coverage. Adding semantic evidence improves Top-1 and MRR by introducing textual and conceptual relevance between bug descriptions and source-code elements. Adding structural evidence further improves localization by modeling dependency relationships among program elements. The full RLSFLoc model achieves the strongest ablation performance because the RL-based fusion module adaptively combines all three evidence sources. This result supports the main assumption of the proposed framework: execution, semantic, and structural features are complementary, and their importance should be learned rather than fixed manually.
 
 \subsection{Project-Wise Comparison}
 
-The project-wise results in Table~\ref{tab:project_wise_results} show that RLSFLoc performance varies across Defects4J projects. Better results are observed for projects such as Time, Lang, and Chart, while lower results are observed for Closure and Mockito. This variation is reasonable because software projects differ in size, number of test cases, dependency density, code complexity, and fault distribution.
-
-These results indicate that RLSFLoc is not dependent on a single project. However, they also show that fault localization difficulty is project-dependent. Larger projects or projects with complex dependency structures may require more refined semantic representations or graph propagation strategies.
+The project-wise results in Table \ref{tab:project_wise_results} show that RLSFLoc performance varies across Defects4J projects. Better results are observed for projects such as Time, Lang, and Chart, while lower results are observed for Closure and Mockito. This variation is reasonable because software projects differ in size, number of test cases, dependency density, code complexity, and fault distribution. These results indicate that RLSFLoc is not dependent on a single project. However, they also show that fault localization difficulty is project-dependent. Larger projects or projects with complex dependency structures may require more refined semantic representations or graph propagation strategies.
 
 \subsection{Efficiency and Deployment Comparison}
 
-Table~\ref{tab:efficiency_memory} shows that traditional SBFL methods are the most efficient in terms of runtime and memory consumption. This is expected because Tarantula, Ochiai, and DStar only require execution spectra and simple formula-based scoring. However, their lower computational cost comes with weaker ranking performance.
-
-RLSFLoc requires more runtime and memory than SBFL, DeepFL, learning-to-rank FL, and graph-based FL, but less memory than Transformer-based FL. The runtime of RLSFLoc is higher because it includes execution analysis, structural graph processing, semantic representation, and RL-based fusion. Nevertheless, the computational overhead remains acceptable because fault localization is usually performed after test execution or build failure, where ranking quality and reduced developer inspection effort are more important than minimal computation time alone.
+Table \ref{tab:efficiency_memory} shows that traditional SBFL methods are the most efficient in terms of runtime and memory consumption. This is expected because Tarantula, Ochiai, and DStar only require execution spectra and simple formula-based scoring. However, their lower computational cost comes with weaker ranking performance. RLSFLoc requires more runtime and memory than the SBFL, DeepFL-like, learning-to-rank, and graph-guided variants, but less memory than the semantic-encoder variant in the reported run. The runtime of RLSFLoc is higher because it includes execution analysis, structural graph processing, semantic representation, and RL-based fusion. Nevertheless, the computational overhead remains acceptable because fault localization is usually performed after test execution or build failure, where ranking quality and reduced developer inspection effort are more important than minimal computation time alone.
 
 \subsection{Adaptive Fusion Analysis}
 
-The fusion-weight analysis in Table~\ref{tab:rl_weight_analysis} shows that the RL agent assigns the largest average weight to execution evidence, followed by structural and semantic evidence. This is theoretically consistent because execution traces provide direct evidence from failed tests, while structural and semantic sources provide complementary context.
-
-In the cross-project setting, the structural weight increases slightly from 0.35 to 0.37, while the execution weight decreases from 0.42 to 0.39. This suggests that structural dependency information becomes more useful when project-specific execution patterns are less stable across projects. The average learned weights also confirm that RLSFLoc does not ignore any evidence source; instead, it learns a balanced combination of execution, structural, and semantic signals.
+The fusion-weight analysis in Table \ref{tab:rl_weight_analysis} shows that the RL agent assigns the largest average weight to execution evidence, followed by structural and semantic evidence. This is theoretically consistent because execution traces provide direct evidence from failed tests, while structural and semantic sources provide complementary context. In the cross-project setting, the structural weight increases slightly from 0.35 to 0.37, while the execution weight decreases from 0.42 to 0.39. This suggests that structural dependency information becomes more useful when project-specific execution patterns are less stable across projects. The average learned weights also confirm that RLSFLoc does not ignore any evidence source; instead, it learns a balanced combination of execution, structural, and semantic signals.
 
 \subsection{Sensitivity Comparison}
 
-Table~\ref{tab:sensitivity_alpha} shows the effect of the structural propagation coefficient $\alpha$. When $\alpha=0$, structural propagation is not used, and performance is lower. As $\alpha$ increases, performance improves until $\alpha=0.6$. This indicates that moderate dependency propagation helps identify suspicious elements connected to faulty regions.
-
-However, when $\alpha$ becomes too large, performance begins to decrease. This is expected because excessive propagation may spread suspiciousness to too many neighboring elements, introducing noise into the ranking. Therefore, the best result at $\alpha=0.6$ supports the idea that structural evidence should be useful but controlled.
+Table \ref{tab:sensitivity_alpha} shows the effect of the structural propagation coefficient $\alpha$. When $\alpha=0$, structural propagation is not used, and performance is lower. As $\alpha$ increases, performance improves until $\alpha=0.6$. This indicates that moderate dependency propagation helps identify suspicious elements connected to faulty regions. However, when $\alpha$ becomes too large, performance begins to decrease. This is expected because excessive propagation may spread suspiciousness to too many neighboring elements, introducing noise into the ranking. Therefore, the best result at $\alpha=0.6$ supports the idea that structural evidence should be useful but controlled.
 
 \subsection{Relative Improvement and Statistical Comparison}
 
-Table~\ref{tab:topk_improvement} shows that RLSFLoc provides large relative improvements over traditional SBFL methods and moderate improvements over advanced learning-based baselines. The improvement over Tarantula, Ochiai, and DStar is especially clear because these methods rely only on execution spectra. The improvement over Transformer-based FL is smaller, showing that Transformer-based methods are strong semantic baselines.
-
-The statistical results in Table~\ref{tab:statistical_significance} further support the comparative findings. RLSFLoc achieves statistically meaningful improvements over traditional SBFL methods and most learning-based baselines in terms of MRR. The comparison with Transformer-based FL produces a smaller effect and a non-significant $p$-value, suggesting that both methods are competitive. This is a useful and realistic result because Transformer-based methods are strong baselines for semantic code understanding.
+Table \ref{tab:defects4j_results} shows that RLSFLoc provides large relative improvements over traditional SBFL methods and moderate improvements over the implemented learning-based variants. The improvement over Tarantula, Ochiai, and DStar is especially clear because these methods rely only on execution spectra. The semantic-encoder comparison is included to examine the contribution of learned contextual representation. The statistical results in Table \ref{tab:statistical_significance} further support the comparative findings for the implemented variants. RLSFLoc achieves statistically meaningful improvements over traditional SBFL methods and most evaluated variants in terms of MRR; comparisons should not be read as a reproduction of results from the papers that motivated each baseline.
 
 \subsection{Overall Comparative Findings}
 
-Overall, the comparative analysis shows that RLSFLoc provides the strongest balance between early fault localization, ranking quality, inspection effort, and computational feasibility. Compared with SBFL methods, it benefits from semantic and structural evidence. Compared with deep learning and learning-to-rank methods, it provides adaptive evidence fusion. Compared with graph-based methods, it combines structural reasoning with execution and semantic signals. Compared with Transformer-based methods, it achieves stronger early-ranking metrics while requiring less memory.
-
-Therefore, the main advantage of RLSFLoc is not only that it combines multiple evidence sources, but that it learns how to combine them adaptively. This makes the proposed framework suitable for practical software engineering environments where different bugs may require different combinations of execution, semantic, and structural evidence.
+The comparative analysis shows that RLSFLoc provides the strongest reported balance between early fault localization, ranking quality, inspection effort, and computational feasibility among the evaluated implementations. Compared with SBFL methods, it benefits from semantic and structural evidence. Compared with learning-to-rank and graph-guided variants, it provides adaptive evidence fusion. Compared with the semantic-encoder variant, it achieves stronger reported early-ranking metrics while requiring less memory. Therefore, the main advantage of RLSFLoc is not only that it combines multiple evidence sources, but that it learns how to combine them adaptively. This makes the proposed framework suitable for practical software engineering environments where different bugs may require different combinations of execution, semantic, and structural evidence.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Software Engineering Impact}
 \label{sec:software_engineering_impact}
 
-The proposed RLSFLoc framework has practical significance for modern software engineering because it supports more accurate, faster, and more maintainable debugging workflows. The results reported in Tables~\ref{tab:defects4j_results}--\ref{tab:statistical_significance} show that RLSFLoc improves early fault ranking by adaptively combining execution, semantic, and structural evidence. This improvement is important because fault localization is useful only when it reduces the amount of code that developers need to inspect.
+The proposed RLSFLoc framework has practical significance for modern software engineering because it supports more accurate, faster, and more maintainable debugging workflows. The results reported in Tables \ref{tab:defects4j_results}--\ref{tab:statistical_significance} show that RLSFLoc improves early fault ranking by adaptively combining execution, semantic, and structural evidence. This improvement is important because fault localization is useful only when it reduces the amount of code that developers need to inspect.
 
 \subsection{Reduced Debugging Effort}
 
-Software debugging is often time-consuming because developers must inspect many files, methods, or statements before identifying the actual fault. RLSFLoc reduces this effort by producing a ranked list of suspicious program elements. As shown in Table~\ref{tab:defects4j_results}, RLSFLoc achieves strong Top-1, Top-3, and Top-10 performance, which means that faulty elements are more likely to appear near the beginning of the ranked list.
-
-The debugging effort is measured using the EXAM score:
+Software debugging is often time-consuming because developers must inspect many files, methods, or statements before identifying the actual fault. RLSFLoc reduces this effort by producing a ranked list of suspicious program elements. As shown in Table \ref{tab:defects4j_results}, RLSFLoc achieves strong Top-1, Top-3, and Top-10 performance, which means that faulty elements are more likely to appear near the beginning of the ranked list. The debugging effort is measured using the EXAM score:
 
 \begin{equation}
 EXAM =
@@ -1299,21 +1265,17 @@ where $r^*$ is the rank position of the actual faulty element and $|V|$ is the t
 
 \subsection{Better Maintainability}
 
-RLSFLoc also supports better software maintainability. The structural dependency graph helps developers understand how faulty or suspicious elements are connected through call relations, control-flow dependencies, data-flow links, and module-level interactions. This is useful because faults may not always be isolated inside a single method or statement. In many cases, the observed failure is caused by interactions among related components.
-
-By combining structural and semantic evidence, RLSFLoc provides more meaningful debugging guidance than coverage-only methods. This helps developers identify not only the most suspicious element but also the surrounding dependency context. As a result, maintainers can better understand whether a fault is local, propagated, or related to a broader design issue.
+RLSFLoc also supports better software maintainability. The structural dependency graph helps developers understand how faulty or suspicious elements are connected through call relations, control-flow dependencies, data-flow links, and module-level interactions. This is useful because faults may not always be isolated inside a single method or statement. In many cases, the observed failure is caused by interactions among related components. By combining structural and semantic evidence, RLSFLoc provides more meaningful debugging guidance than coverage-only methods. This helps developers identify not only the most suspicious element but also the surrounding dependency context. As a result, maintainers can better understand whether a fault is local, propagated, or related to a broader design issue.
 
 \subsection{Faster Bug Fixing}
 
-Faster bug fixing is achieved when the actual faulty element appears near the top of the ranked list. The Top-$k$ results in Table~\ref{tab:defects4j_results} show that RLSFLoc improves early localization performance compared with most baseline methods. This allows developers to begin inspection from the most likely faulty elements rather than reviewing the entire codebase.
+Faster bug fixing is achieved when the actual faulty element appears near the top of the ranked list. The Top-$k$ results in Table \ref{tab:defects4j_results} show that RLSFLoc improves early localization performance compared with most baseline methods. This allows developers to begin inspection from the most likely faulty elements rather than reviewing the entire codebase.
 
-The ablation results in Table~\ref{tab:ablation_study} further show that the full RLSFLoc model performs better than execution-only, execution-plus-semantic, and execution-plus-structural variants. This indicates that faster bug fixing is supported by the joint use of multiple evidence sources rather than by a single feature type.
+The ablation results in Table \ref{tab:ablation_study} further show that the full RLSFLoc model performs better than execution-only, execution-plus-semantic, and execution-plus-structural variants. This indicates that faster bug fixing is supported by the joint use of multiple evidence sources rather than by a single feature type.
 
 \subsection{CI/CD Integration}
 
-RLSFLoc can be integrated into continuous integration and continuous deployment pipelines. When a build fails or a test case detects an error, the framework can automatically collect execution traces, extract structural and semantic information, compute suspiciousness scores, and generate a ranked list of fault candidates.
-
-A practical CI/CD workflow using RLSFLoc may include the following steps:
+RLSFLoc can be integrated into continuous integration and continuous deployment pipelines. When a build fails or a test case detects an error, the framework can automatically collect execution traces, extract structural and semantic information, compute suspiciousness scores, and generate a ranked list of fault candidates. A practical CI/CD workflow using RLSFLoc may include the following steps:
 
 \begin{enumerate}
     \item Run automated test cases after each commit or pull request.
@@ -1339,25 +1301,16 @@ The deployment architecture may include three layers:
     \item \textbf{Developer Support Layer:} presents ranked suspicious elements, Top-$k$ candidates, and debugging explanations to developers.
 \end{itemize}
 
-The efficiency results in Table~\ref{tab:efficiency_memory} show that RLSFLoc introduces higher runtime than simple SBFL methods but remains less memory-intensive than Transformer-based FL. This makes the framework suitable for offline fault analysis after test failure, nightly builds, or CI/CD failure diagnosis.
-
-Overall, RLSFLoc supports practical software engineering by reducing debugging effort, improving maintainability, accelerating bug fixing, enabling CI/CD integration, and providing a deployable intelligent fault localization assistant.
+The efficiency results in Table \ref{tab:efficiency_memory} show that RLSFLoc introduces higher runtime than simple SBFL methods but remains less memory-intensive than the evaluated semantic-encoder variant. This supports evaluating the framework for offline fault analysis after test failure, nightly builds, or CI/CD failure diagnosis. RLSFLoc supports practical software engineering by reducing debugging effort, improving maintainability, accelerating bug fixing, enabling CI/CD integration, and providing a deployable intelligent fault localization assistant.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
 \label{sec:conclusion}
 
-This paper proposed \textbf{RLSFLoc}, a reinforcement learning-enhanced semantic and structural fault localization framework for scalable software fault localization. The main objective of the proposed approach was to improve fault ranking by integrating execution-based suspiciousness, semantic code representation, and structural dependency information. Unlike traditional fault localization methods that rely only on execution spectra or fixed feature-fusion strategies, RLSFLoc uses reinforcement learning to adaptively learn the contribution of different evidence sources during fault ranking.
-
-The proposed framework was designed as a complete fault localization pipeline consisting of execution trace analysis, structural dependency graph construction, semantic representation learning, score normalization, RL-based adaptive fusion, and final fault ranking. The mathematical formulation defined the complete flow from program elements and test spectra to fused suspiciousness scores and ranked outputs. This makes the proposed method suitable for file-level, method-level, and statement-level localization tasks.
-
-The evaluation was conducted using AEEEM~\cite{dambros2010aeeem} and Defects4J~\cite{just2014defects4j} under within-project and cross-project settings. The experimental results showed that RLSFLoc achieved Top-1, Top-3, Top-5, and Top-10 accuracy values of 0.80, 1.00, 1.00, and 1.00, respectively. It also achieved an MRR of 0.8917, a MAP of 0.8917, and a mean EXAM score of 0.0230. The comparative results demonstrated that RLSFLoc significantly improved early fault ranking compared with Tarantula, Ochiai, DStar, DeepFL, learning-to-rank FL, graph-based FL, and Transformer-based FL in nearly all ranking-based metrics. The ablation analysis further confirmed that the full model with RL-based PPO fusion performed better than execution-only, execution-plus-semantic, execution-plus-structural, and non-RL fusion variants.
-
-The results also showed that RLSFLoc introduces moderate computational overhead compared with traditional SBFL methods. However, this overhead is justified by improved ranking performance, reduced inspection effort, and better support for practical debugging. The framework can be integrated into CI/CD pipelines, issue-tracking systems, and development environments to assist developers after test failures or build errors.
-
-In future work, the framework will be further evaluated using larger multi-language software repositories and additional real-world industrial datasets. More advanced semantic encoders, graph neural networks, and policy optimization strategies may also be investigated to improve cross-project generalization and reduce computational overhead. Furthermore, explainability mechanisms can be added to provide developers with clearer reasons for why specific program elements are ranked as suspicious.
+This paper proposed RLSFLoc, a reinforcement learning-enhanced semantic and structural fault localization framework for scalable software fault localization. The main objective of the proposed approach was to improve fault ranking by integrating execution-based suspiciousness, semantic code representation, and structural dependency information. Unlike traditional fault localization methods that rely only on execution spectra or fixed feature-fusion strategies, RLSFLoc uses reinforcement learning to adaptively learn the contribution of different evidence sources during fault ranking. The proposed framework was designed as a complete fault localization pipeline consisting of execution trace analysis, structural dependency graph construction, semantic representation learning, score normalization, RL-based adaptive fusion, and final fault ranking. The mathematical formulation defined the complete flow from program elements and test spectra to fused suspiciousness scores and ranked outputs. This makes the proposed method suitable for file-level, method-level, and statement-level localization tasks. The evaluation was conducted using AEEEM and Defects4J under within-project and cross-project settings. The experimental results showed that RLSFLoc achieved Top-1, Top-3, Top-5, and Top-10 accuracy values of 0.80, 1.00, 1.00, and 1.00, respectively. It also achieved an MRR of 0.8917, a MAP of 0.8917, and a mean EXAM score of 0.0230. In the reported comparison with implemented SBFL, DeepFL-like, learning-to-rank, graph-guided, and semantic-encoder variants, RLSFLoc improved early fault ranking in nearly all ranking-based metrics. The ablation analysis further showed that the full model with RL-based PPO fusion performed better than execution-only, execution-plus-semantic, execution-plus-structural, and non-RL fusion variants in this experiment. The results also showed that RLSFLoc introduces moderate computational overhead compared with traditional SBFL methods. However, this overhead is justified by improved ranking performance, reduced inspection effort, and better support for practical debugging. The framework can be integrated into CI/CD pipelines, issue-tracking systems, and development environments to assist developers after test failures or build errors. In future work, the framework will be further evaluated using larger multi-language software repositories and additional real-world industrial datasets. More advanced semantic encoders, graph neural networks, and policy optimization strategies may also be investigated to improve cross-project generalization and reduce computational overhead. Furthermore, explainability mechanisms can be added to provide developers with clearer reasons for why specific program elements are ranked as suspicious.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \authorcontributions{Conceptualization, M.J. and A.K.; methodology, M.J.; software, M.J.; validation, M.J. and S.B.; formal analysis, M.J. and M.F.; investigation, M.J. and S.B.; resources, A.K., G.S. and H.F.; data curation, M.J.; writing---original draft preparation, M.J.; writing---review and editing, A.K., M.F., G.S. and H.F.; visualization, M.J.; supervision, A.K., G.S. and H.F. All authors have read and agreed to the published version of the manuscript.}
 
 \funding{This research received no external funding.}
@@ -1368,17 +1321,19 @@ In future work, the framework will be further evaluated using larger multi-langu
 
 \dataavailability{The datasets, source code, implementation scripts, experimental outputs, and supplementary results generated for this study are publicly available on GitHub at: \url{https://github.com/Jamil226/RLSFLoc-Experiment}.}
 
-\useofartificialintelligence{Only Grammarly Pro was used to improve grammar, spelling, and language clarity. No part of the research design, implementation, experimental analysis, results generation, or scientific interpretation was generated by artificial intelligence tools. All technical and intellectual contributions in this manuscript were made by the authors.}
+\useofartificialintelligence{Generative artificial intelligence tools were used to assist with literature discovery, bibliography metadata checking, citation placement, and language clarity. The authors reviewed the cited sources and remain responsible for the research design, implementation, experimental analysis, results, interpretations, and final manuscript content.}
 
 \conflictsofinterest{The authors declare no conflicts of interest.}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{adjustwidth}{-\extralength}{0cm}
 \reftitle{References}
 \bibliography{references}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \PublishersNote{}
 \end{adjustwidth}
 \end{document}
-
